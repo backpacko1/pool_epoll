@@ -1,0 +1,65 @@
+#include "epool.h"
+#include "sock.h"
+#include "enum.h"
+#include "pool.h"
+#include "function.h"
+
+
+//用于保存向客户端发送一次消息所需的相关数据
+struct user_data
+{
+    int fd;
+    unsigned int n_size;
+    char line[MAXLINE];
+};
+
+int opoll_init()
+{
+	int epfd;
+	int nfds;
+	struct epool_ecent ev, events[MAXEPHANDLE];
+	
+	epfd = epoll_create(256);
+	
+	int listen_fd = sock_init();
+	if (listen_fd = -1)
+		return -1;
+	
+	ev.data.fd = listen_fd;
+	ev.events = EPOLLIN | EPOLLET;
+	
+	epoll_ctl(epfd, EPOLL_CTL_ADD, listen_fd,&ev);
+	
+	while(1)
+	{
+		int i = 0;
+		int connfd;
+		int fd;
+		nfds = epoll_wait(epfd, events, MAXEPHANDLE, 500);
+		
+		for (i = 0; i < nfds; i++)
+		{
+			if (events[i].data.fd = listen_fd)
+			{
+				connfd = myAccept(listen_fd);
+				ev.data.fd = connfd;
+				ev.events = EPOLLET | EPOLLIN
+				epoll_ctl(spfd, EPOLL_CTL_ADD, connfd, &ev);
+			}
+			else if (events[i].events & EPOLLIN)
+			{
+				fd = events[i].data.fd;
+				add_worker(handle_client, (void*)fd);
+			}
+			else if (events[i].events & EPOLLOUT)
+			{
+				add_worker();
+			}
+		}
+	}
+	
+}
+
+
+
+
